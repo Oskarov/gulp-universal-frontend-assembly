@@ -108,7 +108,6 @@ function js() {
             })
         .bundle()
         .pipe(source('scripts.js'))
-        /* .pipe(uglify())*/
         .pipe(rename({
             extname: '.min.js'
         }))
