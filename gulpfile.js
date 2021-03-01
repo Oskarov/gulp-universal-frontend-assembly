@@ -1,6 +1,9 @@
 let projectFolder = 'dist';
 let sourceFolder = 'src';
 let basedir = `./${projectFolder}/**/*`;
+let config = require('./config');
+let fs = require('fs');
+let env = config.environment || 'dev';
 
 let path = {
     build: {
@@ -23,7 +26,8 @@ let path = {
         html: `${sourceFolder}/**/*.html`,
         css: `${sourceFolder}/scss/**/*.scss`,
         js: `${sourceFolder}/js/**/*.js`,
-        img: `${sourceFolder}/img/**/*.{jpg,png,svg,gif,ico,webp}`
+        img: `${sourceFolder}/img/**/*.{jpg,png,svg,gif,ico,webp}`,
+        fonts: `${sourceFolder}/fonts/**/*.{ttf,woff,woff2}`
     },
     clean: basedir
 }
@@ -60,7 +64,14 @@ function html() {
     return src(path.src.html)
         .pipe(fileInclude())
         .pipe(webphtml())
-        .pipe(dest(path.build.html)).pipe(browsersync.stream()) /* команда обновления страницы */
+        .pipe(dest(path.build.html)).
+        pipe(browsersync.stream()) /* команда обновления страницы */
+}
+
+function fonts() {
+    return src(path.src.fonts)
+        .pipe(dest(path.build.fonts)).
+        pipe(browsersync.stream()) /* команда обновления страницы */
 }
 
 function images() {
@@ -70,17 +81,17 @@ function images() {
         }))
         .pipe(dest(path.build.img))
         .pipe(src(path.src.img))
-        .pipe(imagemin([
-            imagemin.gifsicle({interlaced: true}),
-            imagemin.mozjpeg({quality: 55, progressive: true}),
-            imagemin.optipng({optimizationLevel: 5}),
-            imagemin.svgo({
-                plugins: [
-                    {removeViewBox: true},
-                    {cleanupIDs: false}
-                ]
-            })
-        ]))
+        /* .pipe(imagemin([
+             imagemin.gifsicle({interlaced: true}),
+             imagemin.mozjpeg({quality: 55, progressive: true}),
+             imagemin.optipng({optimizationLevel: 5}),
+             imagemin.svgo({
+                 plugins: [
+                     {removeViewBox: true},
+                     {cleanupIDs: false}
+                 ]
+             })
+         ]))*/
         .pipe(dest(path.build.img))
         .pipe(browsersync.stream()) /* команда обновления страницы */
 }
@@ -130,6 +141,7 @@ function watchFiles() {
     gulp.watch([path.watch.css], css);
     gulp.watch([path.watch.js], js);
     gulp.watch([path.watch.img], images);
+    gulp.watch([path.watch.fonts], fonts);
 }
 
 function clean() {
@@ -156,7 +168,7 @@ function css() {
         .pipe(browsersync.stream());
 }
 
-gulp.task('svgsprite', function () {
+gulp.task('svgsprite', function() {
     return gulp.src([`${sourceFolder}/iconsprite/*.svg`])
         .pipe(svgSprite({
             mode: {
@@ -170,13 +182,18 @@ gulp.task('svgsprite', function () {
 });
 
 let build = gulp.series(clean, gulp.parallel(css, js, libs, fonts, html, images));
-let watch = gulp.parallel(build, watchFiles, browserSync);
+let watch;
+if (env == 'dev'){
+    watch = gulp.parallel(build, watchFiles, browserSync);
+}
+
 
 exports.clean = clean;
 exports.images = images;
 exports.js = js;
 exports.css = css;
 exports.html = html;
+exports.fonts = fonts;
 exports.build = build;
 exports.watch = watch;
-exports.default = watch;
+exports.default = (env == 'dev') ? watch : build;
