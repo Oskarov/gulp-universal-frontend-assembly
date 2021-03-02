@@ -27,8 +27,10 @@
     "gulp-concat": "^2.6.1",
     "gulp-include": "^2.4.1",
     "gulp-js-import": "^1.0.6",
+    "gulp-terser": "^2.0.1",
     "node-sass": "^5.0.0",
     "vinyl": "^2.2.1",
+    "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0"
   },
   "devDependencies": {

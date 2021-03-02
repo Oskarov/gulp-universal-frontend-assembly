@@ -48,6 +48,8 @@ let {src, dest} = require('gulp'),
     webpcss = require('gulp-webpcss'), /* подключение webp в css файлах через добавление класса .webp к body, сам класс будет добавляться js'ом */
     svgSprite = require('gulp-svg-sprite'),
     browserify = require('browserify'),
+    terser = require('gulp-terser'),
+    buffer = require('vinyl-buffer'),
     source = require('vinyl-source-stream');
 
 function browserSync() {
@@ -122,6 +124,8 @@ function js() {
         .pipe(rename({
             extname: '.min.js'
         }))
+        .pipe(buffer())
+        .pipe(terser())
         .pipe(dest(path.build.js))
         .pipe(browsersync.stream()) /* команда обновления страницы */
 }
